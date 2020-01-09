@@ -228,8 +228,8 @@ class LgTVDevice(MediaPlayerDevice):
 
     def media_next_track(self):
         """Send next track command."""
-        self.send_command(36)
+        self.send_command(27)
 
     def media_previous_track(self):
         """Send the previous track command."""
-        self.send_command(37)
+        self.send_command(28)
