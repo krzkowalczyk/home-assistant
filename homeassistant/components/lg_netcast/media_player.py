@@ -84,6 +84,7 @@ class LgTVDevice(MediaPlayerDevice):
         self._state = None
         self._sources = {}
         self._source_names = []
+        self._context_ui = ""
 
     def send_command(self, command):
         """Send remote control commands to the TV."""
@@ -129,6 +130,12 @@ class LgTVDevice(MediaPlayerDevice):
                         source_tuples, key=lambda channel: int(channel[1])
                     )
                     self._source_names = [n for n, k in sorted_sources]
+                
+                context_ui = client.query_data("context_ui")
+                if context_ui:
+                    context_ui = context_ui[0]
+                    self._context_ui = context_ui.find("mode").text
+
         except (LgNetCastError, RequestException):
             self._state = STATE_OFF
 
@@ -187,6 +194,11 @@ class LgTVDevice(MediaPlayerDevice):
         """URL for obtaining a screen capture."""
         return self._client.url + "data?target=screen_image"
 
+    @property
+    def context_ui(self):
+        """UI mode"""
+        return self._context_ui
+
     def turn_off(self):
         """Turn off media player."""
         self.send_command(1)
@@ -228,8 +240,14 @@ class LgTVDevice(MediaPlayerDevice):
 
     def media_next_track(self):
         """Send next track command."""
-        self.send_command(27)
+        if self._context_ui == "VolCh":
+            self.send_command(27)
+        else:
+            self.send_command(36)
 
     def media_previous_track(self):
         """Send the previous track command."""
-        self.send_command(28)
+        if self._context_ui == "VolCh":
+            self.send_command(28)
+        else:
+            self.send_command(37)
